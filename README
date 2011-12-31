@@ -1,0 +1,19 @@
+Saferun is a library for safely exection of programs with limiting of execution time and memory usage.
+
+SRun is a sample app that uses this library.
+
+How to build:
+$ mkdir -p build/release
+$ cd build/release
+$ cmake -DCMAKE_BUILD_TYPE=Release ../../
+$ make
+
+Dependences:
+ * libcap-dev
+
+Saferun is based on Linux Containers and Namespaces, see documentation:
+ * man 2 clone
+ * <kernel-src>/Documentation/cgroups
+ * /Documentation/namespaces
+
+
