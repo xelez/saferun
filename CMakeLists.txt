@@ -35,7 +35,13 @@ set(CPACK_PACKAGE_VERSION "${SAFERUN_VERSION}")
 set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.8), libcap2 (>= 2.10)")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Saferun is a library for safely exection of programs with limiting of execution time and memory usage.\n\nSRun is a sample app that uses this library.\n\nHomepage: http://github.com/xelez/saferun/")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library for safely execution and resource limiting
+ Saferun is a library for safely exection of programs
+ with limiting of execution time and memory usage.
+ .
+ SRun is a sample app that uses this library.
+ .
+ Homepage: http://github.com/xelez/saferun/")
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${SAFERUN_SOURCE_DIR}/README")
 set(CPACK_RESOURCE_FILE_LICENSE "${SAFERUN_SOURCE_DIR}/COPYING")
