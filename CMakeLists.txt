@@ -21,7 +21,7 @@ add_subdirectory(srun)
 # All in one for now
 include(InstallRequiredSystemLibraries)
 
-set(CPACK_PACKAGING_INSTALL_PREFIX "/tmp")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/")
 
 set(CPACK_PACKAGE_VENDOR "Alex Ankudinov")
 set(CPACK_PACKAGE_CONTACT "Alex Ankudinov <xelez0@gmail.com>")
