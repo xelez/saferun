@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/wait.h>
 
+#include "config.h"
+
 struct saferun_jail jail;
 struct saferun_limits limits;
 struct saferun_stat stat;

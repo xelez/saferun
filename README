@@ -2,14 +2,20 @@ Saferun is a library for safely exection of programs with limiting of execution 
 
 SRun is a sample app that uses this library.
 
+Dependences:
+ * cmake >= 2.6 - for building
+ * mounted cgroup filesystem - install cgroup-lite or cgroup-bin to mount it automatically
+ * libcap-dev
+
 How to build:
 $ mkdir -p build/release
 $ cd build/release
 $ cmake -DCMAKE_BUILD_TYPE=Release ../../
 $ make
 
-Dependences:
- * libcap-dev
+How to build .deb:
+$ cd build/release
+$ cpack -G deb
 
 Saferun is based on Linux Containers and Namespaces, see documentation:
  * man 2 clone

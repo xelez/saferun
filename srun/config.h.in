@@ -1,0 +1,6 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+#define SRUN_VERSION "@SAFERUN_VERSION@"
+
+#endif /* _CONFIG_H */
