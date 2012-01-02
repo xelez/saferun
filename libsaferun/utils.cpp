@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <grp.h>
 
 #include <sys/types.h>
 #include <sys/capability.h>
@@ -112,32 +113,26 @@ void setup_drop_caps()
 
 void setup_hostname(const char *name)
 {
-    int len = strlen(name);
-    if (len > 0) {
-        if (sethostname(name, len) == -1)
-            ALERT("Can`t set hostname");
-    }
+    if (!name) return;
+    if (sethostname(name, strlen(name)) == -1)
+        ALERT("Can`t set hostname");
 }
 
 void setup_chroot(const char *dir)
 {
-    int len = strlen(dir);
-    if (len > 0 ) {
-        if (chroot(dir) == -1) {
-            ERROR("Can`t chroot");
-            throw -1;
-        }
+    if (!dir) return;
+    if (chroot(dir) == -1) {
+        ERROR("Can`t chroot");
+        throw -1;
     }
 }
 
 void setup_chdir(const char *dir)
 {
-    int len = strlen(dir);
-    if (len > 0 ) {
-        if (chdir(dir) == -1) {
-            ERROR("Can`t chdir");
-            throw -1;
-        }
+    if (!dir) return;
+    if (chdir(dir) == -1) {
+        ERROR("Can`t chdir");
+        throw -1;
     }
 }
 
@@ -145,10 +140,14 @@ void setup_uidgid(uid_t uid, gid_t gid)
 {
     // First setting gid, because if we set uid first,
     // we wouldn`t have rights for seting gid
-    int ret1 = 0, ret2 = 0;
-    if (gid > 0) ret2 = setgid(gid);
-    if (uid > 0) ret1 = setuid(uid);
-    if (ret1 == -1 || ret2 == -1) {
+    int ret1, ret2, ret3;
+    const gid_t gid_list[] = {gid};
+    if (gid > 0) {
+        ret1 = setgroups(1, gid_list);
+        ret2 = setgid(gid);
+    }
+    if (uid > 0) ret3 = setuid(uid);
+    if (ret1 == -1 || ret2 == -1 || ret3 == -1) {
         ERROR("Can`t set uid and gid");
         throw -1;
     }

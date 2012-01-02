@@ -48,9 +48,9 @@ typedef struct saferun_inst
  */
 typedef struct saferun_jail
 {
-    char hostname[HOST_NAME_MAX];
-    char chroot[MAXPATHLEN];
-    char chdir[MAXPATHLEN];
+    char *hostname;
+    char *chroot;
+    char *chdir;
     
     uid_t uid;
     gid_t gid;
