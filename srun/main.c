@@ -2,62 +2,108 @@
 
 #include <saferun.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
+#include <sys/types.h>
+
+#include <glib.h>
 
 #include "config.h"
+#include "utils.h"
 
 struct saferun_jail jail;
 struct saferun_limits limits;
 struct saferun_stat stat;
 
+gchar *user;
+gchar *group;
+gboolean show_version = FALSE;
+
+static GOptionEntry entries[] =
+{
+    { "mem",      'm', 0, G_OPTION_ARG_INT64,  &limits.mem,    "Memory limit in bytes", "N" },
+    { "time",     't', 0, G_OPTION_ARG_INT,    &limits.time,   "User+System time limit in milliseconds", "N" },
+    { "rtime",    'r', 0, G_OPTION_ARG_INT,    &limits.rtime,  "Real time limit in milliseconds", "N" },
+    
+    { "hostname",  0 , 0, G_OPTION_ARG_STRING, &jail.hostname, "Change computer hostname", "name" },
+    { "chroot",   'c', 0, G_OPTION_ARG_STRING, &jail.chroot,   "Do a chroot", "dir" },
+    { "chdir",    'd', 0, G_OPTION_ARG_STRING, &jail.chdir,    "Change working directory (after chroot)", "dir" },
+    { "user",     'u', 0, G_OPTION_ARG_STRING, &user,          "Run program as this user", "name" },
+    { "group",    'g', 0, G_OPTION_ARG_STRING, &group,         "Run program as this group", "name" },
+    
+    { "version",  'v', 0, G_OPTION_ARG_NONE,   &show_version,  "Show version and exit", NULL },
+    { NULL }
+};
+
+void set_default_options()
+{
+    user = "nobody";
+    group = "nogroup";
+    limits.mem = 64*1024*1024;
+    limits.time = 1000;
+    limits.rtime = 2 * limits.time;
+    jail.chroot = NULL;
+    jail.chdir = NULL;
+    jail.hostname = NULL;
+}
+
+void parse_options(int argc, char *argv[])
+{
+    GError *error = NULL;
+    GOptionContext *context;
+
+    // parse options with glib
+    context = g_option_context_new("[--] file ... - safely run program with limits");
+    g_option_context_add_main_entries(context, entries, NULL);
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        printf("option parsing failed: %s\n", error->message);
+        printf("see --help for more information\n");
+        exit(1);
+    }
+    
+    jail.uid = uid_by_name(user);
+    jail.gid = gid_by_name(group);
+}
+
+char * result_str[] = {"OK", "RE", "TL", "ML", "SV"};
+
 int main(int argc, char *argv[])
 {
-    saferun_inst * inst = saferun_init("temp");
-    strcpy(jail.chroot, "");
-    strcpy(jail.chdir, "");
-    strcpy(jail.hostname, "tratata");
-    jail.uid = 1000; //me
-    jail.gid = 1000; //xelez
-    limits.mem = 64*1024*1024; // 64 mb
-    limits.time = 1000; //1 sec
-    limits.rtime = 2000; // 2 real seconds
+    set_default_options();
+    parse_options(argc, argv);
 
-    char * args[10];
-    int i;
-    for (i = 1; i < argc; ++i)
-        args[i-1] = argv[i];
-    args[argc - 1] = NULL;
-
-    saferun_run(inst, args, &jail, &limits, &stat);
-    
-    printf("\n result = %d\n mem = %lld\n time = %ld\n rtime = %ld\n status = %d\n",
-           stat.result, stat.mem, stat.time, stat.rtime, stat.status);
-    if (stat.result != _OK) printf("FAIL:\n");
-    saferun_fini(inst);
-
-    int status = stat.status;
-
-    if (WIFEXITED(status)) {
-        printf("exited, status=%d\n", WEXITSTATUS(status));
-    } else if (WIFSIGNALED(status)) {
-        printf("killed by signal %d\n", WTERMSIG(status));
-    } else if (WIFSTOPPED(status)) {
-        printf("stopped by signal %d\n", WSTOPSIG(status));
-    } else if (WIFCONTINUED(status)) {
-        printf("continued\n");
+    if (show_version) {
+        g_printf("version: %s\n", SRUN_VERSION);
+        return 1;
     }
 
-/*    printf("microseconds before exec: %lld\n", stat.start_time - tmptime);
+    if (argc < 2) {
+        g_print ("Error: Nothing to run\n");
+        return 1;
+    }
     
-    rusage ru;
-    getrusage(RUSAGE_SELF, &ru);
-    printf("USAGE BY SELF:\n user: %lld\n system: %lld\n\n", TV_TO_USEC(ru.ru_utime), TV_TO_USEC(ru.ru_stime));
+    char **args = &argv[1];
+
+    char cgname[21];
+    snprintf(cgname, 20, "srun%d", getpid());
+    saferun_inst * inst = saferun_init(cgname);
     
-    getrusage(RUSAGE_CHILDREN, &ru);
-    printf("USAGE BY CHILDREN:\n user: %lld\n system: %lld\n\n", TV_TO_USEC(ru.ru_utime), TV_TO_USEC(ru.ru_stime));
-*/
-    return 0;
+    int res = saferun_run(inst, args, &jail, &limits, &stat);
+    
+    if (res) {
+        printf("Error: library error\n");
+    } else {
+        printf("\nresult = %s\nmem = %lld\ntime = %ld\nrtime = %ld\nstatus = %d\n",
+               result_str[stat.result], stat.mem, stat.time, stat.rtime, stat.status);
+        print_exit_status(stat.status);
+    }
+    
+    saferun_fini(inst);
+
+    if (!res && !stat.result)
+        return 0;
+    else
+        return 1;
 }
 
 
