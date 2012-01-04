@@ -1,6 +1,4 @@
-* format project, write normal CMake config
 * add profiling to the code
-* rewrite saferun
 * Add ability to set stdin, stdout and stderr to specifiec fds
 * write utility functions like saferun_popen();
 * change logging, don`t use stderr, and maybe modify error handling
