@@ -25,10 +25,7 @@
 
 struct clone_data
 {
-    const saferun_jail   *jail;
-    const saferun_limits *limits;
-    char **args;
-
+    const saferun_task *task;
     int fd;
 };
 
@@ -70,9 +67,14 @@ void task_to_cgroup(const saferun_inst *inst, pid_t pid)
 int do_start(void *_data)
 {
     clone_data * data = (clone_data*) _data;
-    const saferun_jail *jail = data->jail;
+    const saferun_task *task = data->task;
+    const saferun_jail *jail = task->jail;
 
     try {
+        redirect_fd(task->stdin_fd, 0);
+        redirect_fd(task->stdout_fd, 1);
+        redirect_fd(task->stderr_fd, 2);
+        
         //close all except data->fd, and 0, 1, 2
         setup_close_all_fd(data->fd);
         
@@ -96,17 +98,16 @@ int do_start(void *_data)
         return -1;
     }
 
-    execvp(data->args[0], data->args);
+    execvp(task->argv[0], task->argv);
     
     //This code runs, so an error occured
-    ERROR("Can`t exec %s: %s", data->args[0], strerror(errno));
+    ERROR("Can`t exec %s: %s", task->argv[0], strerror(errno));
     sync_wake(data->fd, SYNC_MAGIC_FAIL);
 
     return 0;
 }
 
-int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail,
-                 const saferun_limits *limits, saferun_stat *stat)
+int saferun_run(const saferun_inst *inst, const saferun_task *task, saferun_stat *stat)
 {
     PROFILING_START();
     const int clone_flags = CLONE_NEWUTS | CLONE_NEWPID | CLONE_NEWIPC | CLONE_NEWNET;
@@ -117,16 +118,14 @@ int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail
 
     sv[0] = sv[1] = 0;
 
-    if (!inst || !args || !jail || !limits || !stat)
+    if (!inst || !task || !task->jail || !task->limits || !stat)
         return -1;
 
     clone_data data;
-    data.jail   = jail;
-    data.limits = limits;
-    data.args = args;
+    data.task = task;
 
     try {
-        setup_cgroup(inst, limits);
+        setup_cgroup(inst, task->limits);
         sync_init(sv);
         data.fd = sv[1];
         
@@ -152,7 +151,7 @@ int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail
             throw -1;
         }
         
-        hypervisor(inst, pid, limits, stat);
+        hypervisor(inst, pid, task->limits, stat);
         
     }
     catch (...) {

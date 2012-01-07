@@ -92,8 +92,18 @@ typedef struct saferun_stat
     saferun_result result; // See task results above
 } saferun_stat;
 
-int saferun_run(const saferun_inst *inst, char *argv[], const saferun_jail *jail,
-                 const saferun_limits *limits, saferun_stat *stat);
+typedef struct saferun_task
+{
+    saferun_jail   *jail;
+    saferun_limits *limits;
+    
+    char **argv;
+    int stdin_fd;
+    int stdout_fd;
+    int stderr_fd;
+} saferun_task;
+
+int saferun_run(const saferun_inst *inst, const saferun_task *task, saferun_stat *stat);
 
 saferun_inst* saferun_init(const char *cgroup_name);
 
