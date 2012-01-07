@@ -13,6 +13,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(BUILD_SHARED_LIBS true)
+option(USE_PROFILING "Compile in profiling output" Off)
 
 add_subdirectory(libsaferun)
 add_subdirectory(srun)
@@ -45,7 +46,6 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library for safely execution and resource 
 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${SAFERUN_SOURCE_DIR}/README")
 set(CPACK_RESOURCE_FILE_LICENSE "${SAFERUN_SOURCE_DIR}/COPYING")
-
 
 set (CPACK_SOURCE_IGNORE_FILES "\\/_;/build/;/CVS/;/\\.svn/;/\\.bzr/;/\\.hg/;/\\.git/;\\.swp$;\\.#;/#" CACHE STRING "CPACK will ignore this files" )
 include(CPack)

@@ -6,6 +6,7 @@
 #include "sync.h"
 #include "saferun.h"
 #include "hv.h"
+#include "profiling.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -47,10 +48,16 @@ void setup_cgroup(const saferun_inst *inst, const saferun_limits *limits)
 
 void fini_cgroup(const saferun_inst *inst)
 {
-    cgroup_write_ll(inst->memory_path, "memory.force_empty", 0);
+    PROFILING_START();
+
+    // memory.force_empty takes 0.5 seconds, too long and not really needed
+    //cgroup_write_ll(inst->memory_path, "memory.force_empty", 0);
+    PROFILING_CHECKPOINT();
     rmdir(inst->cpuacct_path);
     rmdir(inst->memory_path);
     rmdir(inst->devices_path);
+
+    PROFILING_CHECKPOINT();
 }
 
 void task_to_cgroup(const saferun_inst *inst, pid_t pid)
@@ -101,6 +108,7 @@ int do_start(void *_data)
 int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail,
                  const saferun_limits *limits, saferun_stat *stat)
 {
+    PROFILING_START();
     const int clone_flags = CLONE_NEWUTS | CLONE_NEWPID | CLONE_NEWIPC | CLONE_NEWNET;
     int sv[2];
     int ret = 0;
@@ -145,6 +153,7 @@ int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail
         }
         
         hypervisor(inst, pid, limits, stat);
+        
     }
     catch (...) {
         if (pid > 0) kill(pid, SIGKILL);
@@ -155,10 +164,14 @@ int saferun_run(const saferun_inst *inst, char *args[], const saferun_jail *jail
         ret = -1;
     }
     
+    PROFILING_CHECKPOINT();
+    
     try {
         sync_free(sv);
         fini_cgroup(inst);
     } catch(...) {}
+
+    PROFILING_CHECKPOINT();
     return ret;
 }
 
