@@ -89,22 +89,38 @@ void setup_close_all_fd(int fd_to_ignore)
         ALERT("failed to close directory");
 }
 
+void redirect_fd(int fd, int to_fd)
+{
+    if (fd == to_fd || fd < 0)
+        return;
+
+    if (close(to_fd) < 0) {
+        ERROR("Can`t close old fd: %d", fd);
+        throw -1;
+    }
+
+    if (dup2(fd, to_fd) == -1) {
+        ERROR("Can`t redirect fd %d to %d", fd, to_fd);
+        throw -1;
+    }
+}
+
 void setup_drop_caps()
 {
     cap_t empty;
     empty = cap_init();
     if (!empty) {
-            ERROR("cap_init failed");
+            ERROR("cap_init() failed");
             throw -1;
     }
 
     if ( capsetp(0, empty) ) {
-            ERROR("capsetp failed");
+            ERROR("capsetp() failed");
             throw -1;
     }
     
     if ( cap_free(empty) ) {
-            ERROR("cap_free failed");
+            ERROR("cap_free() failed");
             throw -1;
     }
 
