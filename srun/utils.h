@@ -7,6 +7,8 @@
 uid_t uid_by_name(char *name);
 gid_t gid_by_name(char *name);
 
+int openfd(char *fname, char *mode);
+
 void print_exit_status(int status);
 void print_rusage();
 

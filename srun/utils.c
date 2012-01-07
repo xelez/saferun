@@ -27,6 +27,11 @@ gid_t gid_by_name(char *name)
     return info->gr_gid;
 }
 
+int openfd(char *fname, char *mode)
+{
+    return fileno(fopen(fname, mode));
+}
+
 void print_exit_status(int status)
 {
     if (WIFEXITED(status)) {
