@@ -109,6 +109,8 @@ saferun_inst* saferun_init(const char *cgroup_name);
 
 int saferun_fini(saferun_inst * inst);
 
+void saferun_set_logging(int fd, int priority);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

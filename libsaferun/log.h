@@ -6,11 +6,11 @@
 
 /* predefined priorities. */
 enum {
-    LOG_PRIORITY_TRACE,
-    LOG_PRIORITY_DEBUG,
-    LOG_PRIORITY_INFO,
-    LOG_PRIORITY_WARN,
-    LOG_PRIORITY_ERROR,
+    LOG_PRIORITY_TRACE = 0,
+    LOG_PRIORITY_DEBUG = 1,
+    LOG_PRIORITY_INFO  = 2,
+    LOG_PRIORITY_WARN  = 3,
+    LOG_PRIORITY_ERROR = 4,
 };
 
 #if !NDEBUG || USE_PROFILING 
@@ -18,6 +18,9 @@ enum {
 #else
 #define DEFAULT_LOG_PRIORITY LOG_PRIORITY_INFO;
 #endif
+
+// set default logging fd to stderr
+#define DEFAULT_LOG_FD 2
 
 #define LOG_PRINT(priority, level, format, ...) do {\
     log_print(priority, "Saferun " level ": " format "\n", ##__VA_ARGS__); \

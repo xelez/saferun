@@ -21,7 +21,11 @@ gchar *group;
 gchar *in_file;
 gchar *out_file;
 gchar *err_file;
+gchar *log_file;
 gboolean show_version = FALSE;
+gboolean debug_lib = FALSE;
+int log_fd;
+int log_priority;
 
 static GOptionEntry entries[] =
 {
@@ -38,9 +42,10 @@ static GOptionEntry entries[] =
     { "in",  'i', 0, G_OPTION_ARG_FILENAME, &in_file,  "Redirect program stdin to file", "file" },
     { "out", 'o', 0, G_OPTION_ARG_FILENAME, &out_file, "Redirect program stdout to file", "file" },
     { "err", 'e', 0, G_OPTION_ARG_FILENAME, &err_file, "Redirect program stderr to file", "file" },
-
+    { "log", 'l', 0, G_OPTION_ARG_FILENAME, &log_file, "Write libsaferun log to file", "file" },
     
     { "version",  'v', 0, G_OPTION_ARG_NONE,   &show_version,  "Show version and exit", NULL },
+    { "debug",  0, 0, G_OPTION_ARG_NONE,   &debug_lib,  "Show debug output of the library", NULL },
     { NULL }
 };
 
@@ -48,7 +53,7 @@ void set_default_options()
 {
     user = "nobody";
     group = "nogroup";
-    in_file = out_file = err_file = NULL;
+    in_file = out_file = err_file = log_file = NULL;
     
     limits.mem = 64*1024*1024;
     limits.time = 1000;
@@ -63,6 +68,9 @@ void set_default_options()
     task.stdin_fd = 0;
     task.stdout_fd = 1;
     task.stderr_fd = 2;
+
+    log_fd = 2; //stderr
+    log_priority = 3; //Warnings and errors
 }
 
 void parse_options(int argc, char *argv[])
@@ -88,6 +96,11 @@ void parse_options(int argc, char *argv[])
         task.stdout_fd = openfd(out_file, "w"); 
     if (err_file)
         task.stderr_fd = openfd(err_file, "w");
+    if (log_file)
+        log_fd = openfd(log_file, "w");
+
+    if (debug_lib)
+        log_priority = 0;
 
     task.argv = &argv[1];
 }
@@ -111,6 +124,7 @@ int main(int argc, char *argv[])
     
     char cgname[21];
     snprintf(cgname, 20, "srun%d", getpid());
+    saferun_set_logging(log_fd, log_priority);
     saferun_inst * inst = saferun_init(cgname);
     
     int res = saferun_run(inst, &task, &stat);

@@ -15,7 +15,7 @@ long long get_rtime();
 pid_t saferun_clone(int (*fn)(void *), void *arg, int flags);
 
 void redirect_fd(int fd, int to_fd);
-void setup_close_all_fd(int fd_to_ignore);
+void setup_inherited_fds();
 void setup_drop_caps();
 void setup_hostname(const char *name);
 void setup_chroot(const char *dir);

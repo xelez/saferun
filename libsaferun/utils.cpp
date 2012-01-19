@@ -13,6 +13,7 @@
 #include <sched.h>
 #include <signal.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 long long get_rtime()
 {
@@ -42,10 +43,10 @@ pid_t saferun_clone(int (*fn)(void *), void *arg, int flags)
 }
 
 /*
- * Closes all fs`s except 0, 1, 2 and fd_to_ignore
- * They are for stdin, stdout, stderr and socket fd for syncing.
+ * Set close-on-exec flag to all fd`s except 0, 1, 2
+ * They are for stdin, stdout, stderr.
  */
-void setup_close_all_fd(int fd_to_ignore)
+void setup_inherited_fds()
 {
     struct dirent dirent, *direntp;
     int fd, fddir;
@@ -76,14 +77,13 @@ void setup_close_all_fd(int fd_to_ignore)
         fd = atoi(direntp->d_name);
 
         if (fd == 0 || fd == 1 || fd == 2
-                || fd == fddir || fd == fd_to_ignore)
+                || fd == fddir)
             continue;
 
-        /* found inherited fd, closing it */
-        if (close(fd) == -1) {
-            SYSWARN("can`t close fd %d", fd);
-            WARN("Trying to close 2 more times");
-            close(fd); close(fd);
+        /* found inherited fd, setting FD_CLOEXEC */
+        if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1) {
+            SYSERROR("can`t close-on-exec on fd %d", fd);
+            throw -1;
         }
     }
 

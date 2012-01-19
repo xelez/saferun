@@ -75,8 +75,8 @@ int do_start(void *_data)
         redirect_fd(task->stdout_fd, 1);
         redirect_fd(task->stderr_fd, 2);
         
-        //close all except data->fd, and 0, 1, 2
-        setup_close_all_fd(data->fd);
+        //set close-on-exec flag to all fds, except 0, 1, 2
+        setup_inherited_fds();
         
         setup_hostname(jail->hostname);
         setup_chroot(jail->chroot);
@@ -213,5 +213,10 @@ int saferun_fini(saferun_inst * inst)
         return -1;
     delete inst;
     return 0;
+}
+
+void saferun_set_logging(int fd, int priority)
+{
+    log_set_logging(fd, priority);
 }
 
