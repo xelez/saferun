@@ -11,7 +11,7 @@
 #include "log.h"
 
 #define PROFILING_START() long long profiling_start_time = get_rtime()
-#define PROFILING_CHECKPOINT() TRACE("%s():%d checkpoint: %lld microseconds", __FUNCTION__, __LINE__, get_rtime() - profiling_start_time)
+#define PROFILING_CHECKPOINT() TRACE("checkpoint: %lld microseconds", get_rtime() - profiling_start_time)
 
 void do_some_stuff()
 {
@@ -27,8 +27,7 @@ void do_some_stuff()
 
 #define PROFILING_START()
 #define PROFILING_CHECKPOINT()
-void do_some_stuff() {
-}
+void do_some_stuff() {}
 
 #endif /* USE_PROFILING */
 

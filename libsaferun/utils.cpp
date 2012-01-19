@@ -9,6 +9,7 @@
 
 #include <sys/types.h>
 #include <sys/capability.h>
+#include <sys/time.h>
 #include <sched.h>
 #include <signal.h>
 #include <dirent.h>
@@ -52,7 +53,8 @@ void setup_close_all_fd(int fd_to_ignore)
 
     dir = opendir("/proc/self/fd");
     if (!dir) {
-        WARN("Failed to open directory: %s", strerror(errno));
+        SYSWARN("failed to open dir /proc/self/fd/");
+        WARN("can`t check for inherited fds");
         return; //Not a critical error
     }
 
@@ -79,14 +81,16 @@ void setup_close_all_fd(int fd_to_ignore)
 
         /* found inherited fd, closing it */
         if (close(fd) == -1) {
-            WARN("Can`t close fd %d: %s", fd, strerror(errno));
+            SYSWARN("can`t close fd %d", fd);
             WARN("Trying to close 2 more times");
             close(fd); close(fd);
         }
     }
 
-    if (closedir(dir))
-        ALERT("failed to close directory");
+    if (closedir(dir)) {
+        SYSERROR("failed to close directory");
+        throw -1;
+    }
 }
 
 void redirect_fd(int fd, int to_fd)
@@ -95,12 +99,12 @@ void redirect_fd(int fd, int to_fd)
         return;
 
     if (close(to_fd) < 0) {
-        ERROR("Can`t close old fd: %d", fd);
+        SYSERROR("Can`t close old fd: %d", fd);
         throw -1;
     }
 
     if (dup2(fd, to_fd) == -1) {
-        ERROR("Can`t redirect fd %d to %d", fd, to_fd);
+        SYSERROR("can`t redirect fd %d to %d", fd, to_fd);
         throw -1;
     }
 }
@@ -110,17 +114,17 @@ void setup_drop_caps()
     cap_t empty;
     empty = cap_init();
     if (!empty) {
-            ERROR("cap_init() failed");
+            SYSERROR("cap_init() failed");
             throw -1;
     }
 
     if ( capsetp(0, empty) ) {
-            ERROR("capsetp() failed");
+            SYSERROR("capsetp() failed");
             throw -1;
     }
     
     if ( cap_free(empty) ) {
-            ERROR("cap_free() failed");
+            SYSERROR("cap_free() failed");
             throw -1;
     }
 
@@ -130,15 +134,17 @@ void setup_drop_caps()
 void setup_hostname(const char *name)
 {
     if (!name) return;
-    if (sethostname(name, strlen(name)) == -1)
-        ALERT("Can`t set hostname");
+    if (sethostname(name, strlen(name)) == -1) {
+        SYSERROR("can`t set hostname");
+        throw -1;
+    }
 }
 
 void setup_chroot(const char *dir)
 {
     if (!dir) return;
     if (chroot(dir) == -1) {
-        ERROR("Can`t chroot");
+        SYSERROR("can`t chroot");
         throw -1;
     }
 }
@@ -147,7 +153,7 @@ void setup_chdir(const char *dir)
 {
     if (!dir) return;
     if (chdir(dir) == -1) {
-        ERROR("Can`t chdir");
+        SYSERROR("can`t chdir");
         throw -1;
     }
 }
@@ -164,7 +170,7 @@ void setup_uidgid(uid_t uid, gid_t gid)
     }
     if (uid > 0) ret3 = setuid(uid);
     if (ret1 == -1 || ret2 == -1 || ret3 == -1) {
-        ERROR("Can`t set uid and gid");
+        ERROR("can`t set uid and gid");
         throw -1;
     }
 }
