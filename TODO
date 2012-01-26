@@ -1,4 +1,3 @@
-* change logging, don`t use stderr, and maybe modify error handling
 * cleanup code
 * write more documentation
 * write utility functions like saferun_popen();
