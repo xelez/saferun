@@ -54,3 +54,9 @@ Saferun is based on Linux Containers and Namespaces, see documentation:
  * <kernel-src>/Documentation/cgroups
  * <kernel-src>/Documentation/namespaces
 
+Author:
+  Alexander Ankudinov <xelez0@gmail.com>
+
+License:
+  All files are avaliable under the terms of the Apache License, version 2.0.
+
