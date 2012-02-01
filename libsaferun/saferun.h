@@ -16,11 +16,8 @@ extern "C" {
 #include <sched.h>
 #include <unistd.h>
 
-
-const int HYPERVISOR_DELAY = 40*1000*1000; //in nanosec
-const int SYNC_MAGIC_1 = 17;
-const int SYNC_MAGIC_2 = 27;
-const int SYNC_MAGIC_FAIL = 136;
+/* Saferun hypervisor delay */
+const int SAFERUN_HV_DELAY = 40*1000*1000; //in nanosec
 
 /*
  * saferun_inst - information for use in library

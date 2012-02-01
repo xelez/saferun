@@ -56,7 +56,7 @@ void hypervisor(const saferun_inst *inst, pid_t pid, const saferun_limits * limi
     // Setting up delay for hypervisor
     timespec delay;
     delay.tv_sec = 0;
-    delay.tv_nsec = HYPERVISOR_DELAY;
+    delay.tv_nsec = SAFERUN_HV_DELAY;
     
     stat->result = _OK;
 
