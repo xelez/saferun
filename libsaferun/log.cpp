@@ -24,10 +24,8 @@
  * __thread makes a thread-safe variable, as http://en.wikipedia.org/wiki/Thread-local_storage#C.2B.2B
  * says, all linux compilers allow this syntax
  */
-/* -1 = no logging */
-static __thread int log_fd = DEFAULT_LOG_FD;
-
-int log_priority = DEFAULT_LOG_PRIORITY;
+static __thread int log_fd = DEFAULT_LOG_FD; /* -1 == no logging */
+static __thread int log_priority = DEFAULT_LOG_PRIORITY;
 
 void log_set_logging(int fd, int priority)
 {

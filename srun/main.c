@@ -70,7 +70,7 @@ void set_default_options()
     task.stderr_fd = 2;
 
     log_fd = 2; //stderr
-    log_priority = 3; //Warnings and errors
+    log_priority = SAFERUN_LOG_WARN; //Log warnings and errors
 }
 
 void parse_options(int argc, char *argv[])
@@ -100,7 +100,7 @@ void parse_options(int argc, char *argv[])
         log_fd = openfd(log_file, "w");
 
     if (debug_lib)
-        log_priority = 0;
+        log_priority = SAFERUN_LOG_TRACE; //show all messages
 
     task.argv = &argv[1];
 }

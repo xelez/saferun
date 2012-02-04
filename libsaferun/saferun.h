@@ -28,6 +28,8 @@ extern "C" {
 #include <sched.h>
 #include <unistd.h>
 
+#include "log_priorities.h"
+
 /* Saferun hypervisor delay */
 const int SAFERUN_HV_DELAY = 40*1000*1000; //in nanosec
 

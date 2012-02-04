@@ -20,19 +20,12 @@
 #include <string.h>
 #include <errno.h>
 
-/* predefined priorities. */
-enum {
-    LOG_PRIORITY_TRACE = 0,
-    LOG_PRIORITY_DEBUG = 1,
-    LOG_PRIORITY_INFO  = 2,
-    LOG_PRIORITY_WARN  = 3,
-    LOG_PRIORITY_ERROR = 4,
-};
+#include "log_priorities.h"
 
 #if !NDEBUG || USE_PROFILING 
-#define DEFAULT_LOG_PRIORITY LOG_PRIORITY_TRACE;
+#define DEFAULT_LOG_PRIORITY SAFERUN_LOG_TRACE;
 #else
-#define DEFAULT_LOG_PRIORITY LOG_PRIORITY_INFO;
+#define DEFAULT_LOG_PRIORITY SAFERUN_LOG_INFO;
 #endif
 
 // set default logging fd to stderr
@@ -42,12 +35,12 @@ enum {
     log_print(priority, "Saferun " level ": " format "\n", ##__VA_ARGS__); \
 } while (0)
 
-#define TRACE(format, ...) LOG_PRINT(LOG_PRIORITY_TRACE, "TRACE", "%s:%d in %s - " format, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
-#define DEBUG(format, ...) LOG_PRINT(LOG_PRIORITY_DEBUG, "DEBUG", "%s:%d in %s - " format, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define TRACE(format, ...) LOG_PRINT(SAFERUN_LOG_TRACE, "TRACE", "%s:%d in %s - " format, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define DEBUG(format, ...) LOG_PRINT(SAFERUN_LOG_DEBUG, "DEBUG", "%s:%d in %s - " format, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
-#define INFO(format, ...)  LOG_PRINT(LOG_PRIORITY_INFO,  "INFO",    format, ##__VA_ARGS__)
-#define WARN(format, ...)  LOG_PRINT(LOG_PRIORITY_WARN,  "WARNING", format, ##__VA_ARGS__)
-#define ERROR(format, ...) LOG_PRINT(LOG_PRIORITY_ERROR, "ERROR",   format, ##__VA_ARGS__)
+#define INFO(format, ...)  LOG_PRINT(SAFERUN_LOG_INFO,  "INFO",    format, ##__VA_ARGS__)
+#define WARN(format, ...)  LOG_PRINT(SAFERUN_LOG_WARN,  "WARNING", format, ##__VA_ARGS__)
+#define ERROR(format, ...) LOG_PRINT(SAFERUN_LOG_ERROR, "ERROR",   format, ##__VA_ARGS__)
 
 #define SYSERROR(format, ...) ERROR("%s - " format, strerror(errno), ##__VA_ARGS__)
 #define SYSWARN(format, ...)   WARN("%s - " format, strerror(errno), ##__VA_ARGS__)
