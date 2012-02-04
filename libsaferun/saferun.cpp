@@ -41,8 +41,7 @@ const int SYNC_MAGIC_1 = 17;
 const int SYNC_MAGIC_2 = 27;
 const int SYNC_MAGIC_FAIL = 136;
 
-struct clone_data
-{
+struct clone_data {
     const saferun_task *task;
     int fd;
 };
