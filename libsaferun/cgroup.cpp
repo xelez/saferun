@@ -14,15 +14,19 @@
  *  limitations under the License.
  */
 
+#include <mntent.h>
+#include <signal.h>
+#include <sys/param.h>
+#include <string.h>
+
 #include "cgroup.h"
 #include "log.h"
 
-#include <string.h>
-#include <mntent.h>
-#include <signal.h>
-
-#include <sys/param.h>
-
+/**
+ * Get cgroup path for group cgroup_name in specified subsystem
+ *
+ * @param path where to write result
+ */
 void cgroup_get_path(const char *subsystem, const char *cgroup_name, char *path)
 {
     struct mntent *mntent;
@@ -50,7 +54,14 @@ void cgroup_get_path(const char *subsystem, const char *cgroup_name, char *path)
     throw -1;
 }
 
-FILE * cgroup_open(const char * path, const char *filename, const char *mode)
+/**
+ * Open a file in cgroup
+ *
+ * @param path      path to cgroup
+ * @param filename  name of a file to open
+ * @param mode      as in fopen
+ */
+FILE *cgroup_open(const char *path, const char *filename, const char *mode)
 {
     char fullpath[MAXPATHLEN];
     snprintf(fullpath, MAXPATHLEN, "%s/%s", path, filename);
@@ -64,9 +75,16 @@ FILE * cgroup_open(const char * path, const char *filename, const char *mode)
     return file;
 }
 
-void cgroup_write_str(const char * path, const char * filename, const char * str)
+/**
+ * Write string to file in cgroup
+ *
+ * @param path      path to cgroup
+ * @param filename  name of a file to write
+ * @param str       string to write
+ */
+void cgroup_write_str(const char *path, const char *filename, const char *str)
 {
-    FILE * file = cgroup_open(path, filename, "w");
+    FILE *file = cgroup_open(path, filename, "w");
     
     fputs(str, file);
     int ret = ferror(file);
@@ -78,14 +96,28 @@ void cgroup_write_str(const char * path, const char * filename, const char * str
     }
 }
 
-void cgroup_write_ll(const char * path, const char * filename, const long long x)
+/**
+ * Write number to file in cgroup
+ *
+ * @param path      path to cgroup
+ * @param filename  name of a file to write
+ * @param x         number to write
+ */
+void cgroup_write_ll(const char *path, const char *filename, const long long x)
 {
     char str[22]; //in fact the max length of long long as string is 20
     snprintf(str, 22, "%lld", x);
     cgroup_write_str(path, filename, str);
 }
 
-void cgroup_read_ll(const char * path, const char * filename, long long * x)
+/**
+ * Read number from file in cgroup
+ *
+ * @param path      path to cgroup
+ * @param filename  name of a file to read
+ * @param x         where to write result
+ */
+void cgroup_read_ll(const char *path, const char *filename, long long *x)
 {
     FILE * file = cgroup_open(path, filename, "r");
     int k = fscanf(file, "%lld", x);
@@ -95,7 +127,13 @@ void cgroup_read_ll(const char * path, const char * filename, long long * x)
         throw -1;
 }
 
-void cgroup_kill(const char * path, int sig)
+/**
+ * Send signal to all processes in cgroup
+ *
+ * @param path  path to cgroup
+ * @param sig   Signal to send
+ */
+void cgroup_kill(const char *path, int sig)
 {
     FILE * file = cgroup_open(path, "tasks", "r");
     int pid;
