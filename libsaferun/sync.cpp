@@ -14,8 +14,6 @@
  *  limitations under the License.
  */
 
-#include "log.h"
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -23,7 +21,11 @@
 #include <fcntl.h>
 #include <string.h>
 
-/* init sockets for syncing */
+#include "log.h"
+
+/**
+ * Init sockets for syncing
+ */
 void sync_init(int sv[2])
 {
     /* SOCK_CLOEXEC means that we don`t inherit this after exec */
