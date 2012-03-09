@@ -14,15 +14,23 @@
  *  limitations under the License.
  */
 
-#include "saferun.h"
-#include "log.h"
-#include "cgroup.h"
-#include "utils.h"
-
 #include <sys/wait.h>
 #include <signal.h>
 #include <time.h>
 
+#include "saferun.h"
+#include "cgroup.h"
+#include "utils.h"
+#include "log.h"
+
+/**
+ * Checks process exit status.
+ *
+ * Sets stat->result to _RE if Runtime Error occured.
+ *
+ * @param status  process exit status
+ * @param stat    statistics to update
+ */
 void check_exit_status(const int status, saferun_stat * stat)
 {
     stat->status = status;
@@ -36,6 +44,15 @@ void check_exit_status(const int status, saferun_stat * stat)
         stat->result = _OK;
 }
 
+/**
+ * Checks user+system execution time of the process via cgroup subsystem files.
+ *
+ * Sets stat->result to _TL if time limit exceeded.
+ *
+ * @param inst    library instance
+ * @param limits  limits to check
+ * @param stat    statistics to update
+ */
 void check_time(const saferun_inst * inst, const saferun_limits * limits, saferun_stat * stat)
 {
     long long t;
@@ -45,6 +62,14 @@ void check_time(const saferun_inst * inst, const saferun_limits * limits, saferu
         stat->result = _TL;
 }
 
+/**
+ * Checks real execution time of the process.
+ *
+ * Sets stat->result to _TL if real time limit exceeded.
+ *
+ * @param limits  limits to check
+ * @param stat    statistics to update
+ */
 void check_rtime(const saferun_limits * limits, saferun_stat * stat)
 {
     stat->rtime = (get_rtime() - stat->start_time) / 1000;
@@ -52,6 +77,16 @@ void check_rtime(const saferun_limits * limits, saferun_stat * stat)
         stat->result = _TL;
 }
 
+/**
+ * Checks memory usage for process via cgroup subsystem files.
+ *
+ * Sets stat->result to _ML if memory limit exceeded.
+ *
+ * @param inst    library instance
+ * @param limits  limits to check
+ * @param status  process exit status
+ * @param stat    statistics to update
+ */
 void check_memory(const saferun_inst * inst, const saferun_limits * limits, int status, saferun_stat * stat)
 {
     long long failcnt, t;
@@ -66,6 +101,14 @@ void check_memory(const saferun_inst * inst, const saferun_limits * limits, int 
             stat->result = _ML;
 }
 
+/**
+ * Run hypervisor for process.
+ *
+ * Hypervisor will check execution time and memory usage.
+ * It runs some checks every SAFERUN_HV_DELAY.
+ * Some checks are run after process finishes.
+ *
+ */
 void hypervisor(const saferun_inst *inst, pid_t pid, const saferun_limits * limits,
                 saferun_stat * stat)
 {
