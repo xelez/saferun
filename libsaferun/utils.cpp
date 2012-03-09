@@ -14,23 +14,26 @@
  *  limitations under the License.
  */
 
-#include "log.h"
-#include "utils.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <grp.h>
 
 #include <sys/types.h>
 #include <sys/capability.h>
 #include <sys/time.h>
-#include <sched.h>
 #include <signal.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <sched.h>
+#include <grp.h>
 
+#include "log.h"
+#include "utils.h"
+
+/**
+ * Return real time in usecs
+ */
 long long get_rtime()
 {
     timeval t;
@@ -38,6 +41,9 @@ long long get_rtime()
     return TV_TO_USEC(t);
 }
 
+/**
+ * Wrapper for system clone function.
+ */
 pid_t saferun_clone(int (*fn)(void *), void *arg, int flags)
 {
     long stack_size = sysconf(_SC_PAGESIZE);
@@ -58,9 +64,9 @@ pid_t saferun_clone(int (*fn)(void *), void *arg, int flags)
     return ret;
 }
 
-/*
+/**
  * Set close-on-exec flag to all fd`s except 0, 1, 2
- * They are for stdin, stdout, stderr.
+ * (stdin, stdout, stderr)
  */
 void setup_inherited_fds()
 {
@@ -125,6 +131,9 @@ void redirect_fd(int fd, int to_fd)
     }
 }
 
+/**
+ * Drop all capabilities.
+ */
 void setup_drop_caps()
 {
     cap_t empty;
@@ -147,6 +156,9 @@ void setup_drop_caps()
     DEBUG("capabilities has been dropped");
 }
 
+/**
+ * Change hostname
+ */
 void setup_hostname(const char *name)
 {
     if (!name) return;
@@ -156,6 +168,9 @@ void setup_hostname(const char *name)
     }
 }
 
+/**
+ * Change root directory
+ */
 void setup_chroot(const char *dir)
 {
     if (!dir) return;
@@ -165,6 +180,9 @@ void setup_chroot(const char *dir)
     }
 }
 
+/**
+ * Change current directory
+ */
 void setup_chdir(const char *dir)
 {
     if (!dir) return;
@@ -174,6 +192,11 @@ void setup_chdir(const char *dir)
     }
 }
 
+/**
+ * Change uid and gid.
+ *
+ * @note This function drops all groups except gid
+ */
 void setup_uidgid(uid_t uid, gid_t gid)
 {
     // First setting gid, because if we set uid first,
