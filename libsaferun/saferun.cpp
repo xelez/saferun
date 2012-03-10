@@ -14,14 +14,6 @@
  *  limitations under the License.
  */
 
-#include "log.h"
-#include "cgroup.h"
-#include "utils.h"
-#include "sync.h"
-#include "saferun.h"
-#include "hv.h"
-#include "profiling.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -37,15 +29,31 @@
 #include <time.h>
 #include <errno.h>
 
-const int SYNC_MAGIC_1 = 17;
-const int SYNC_MAGIC_2 = 27;
-const int SYNC_MAGIC_FAIL = 136;
+#include "saferun.h"
+#include "cgroup.h"
+#include "sync.h"
+#include "hv.h"
+#include "utils.h"
+#include "profiling.h"
+#include "log.h"
+
+const int SYNC_MAGIC_1 = 17; /**< Just some number for syncing parent process and child */
+const int SYNC_MAGIC_2 = 27; /**< Just some other number */
+const int SYNC_MAGIC_FAIL = 136; /**< Another number, indicating that something has gone wrong */
 
 struct clone_data {
     const saferun_task *task;
-    int fd;
+    int fd; /**< fd for syncing with parent process*/
 };
 
+/**
+ * Setups cgroup
+ *
+ * Makes directories, writes parameters to files in cgroups.
+ *
+ * @todo
+ * Find out what memory.move_chare_at_immigrate really means.
+ */
 void setup_cgroup(const saferun_inst *inst, const saferun_limits *limits)
 {
     mkdir(inst->cpuacct_path, 0777);
@@ -60,6 +68,9 @@ void setup_cgroup(const saferun_inst *inst, const saferun_limits *limits)
 //    cgroup_write_ll(inst->memory_path, "memory.move_charge_at_immigrate", 3);
 }
 
+/**
+ * Removes cgroup via rmdir
+ */
 void fini_cgroup(const saferun_inst *inst)
 {
     PROFILING_START();
@@ -74,6 +85,9 @@ void fini_cgroup(const saferun_inst *inst)
     PROFILING_CHECKPOINT();
 }
 
+/**
+ * Adds task to cgroups.
+ */
 void task_to_cgroup(const saferun_inst *inst, pid_t pid)
 {
     cgroup_write_ll(inst->memory_path, "tasks", pid);
@@ -83,7 +97,7 @@ void task_to_cgroup(const saferun_inst *inst, pid_t pid)
 
 int do_start(void *_data)
 {
-    clone_data * data = (clone_data*) _data;
+    clone_data *data = (clone_data *) _data;
     const saferun_task *task = data->task;
     const saferun_jail *jail = task->jail;
 
@@ -124,6 +138,9 @@ int do_start(void *_data)
     return 0;
 }
 
+/**
+ * Runs task in secured environment limiting task`s resources.
+ */
 int saferun_run(const saferun_inst *inst, const saferun_task *task, saferun_stat *stat)
 {
     PROFILING_START();
@@ -191,7 +208,7 @@ int saferun_run(const saferun_inst *inst, const saferun_task *task, saferun_stat
     return ret;
 }
 
-/*
+/**
  * Initialize the library.
  *
  * Finds cgroups, finds all needed paths
@@ -202,7 +219,7 @@ saferun_inst* saferun_init(const char *cgroup_name)
     if (!cgroup_name)
         return NULL;
 
-    saferun_inst * inst = new saferun_inst;
+    saferun_inst *inst = (saferun_inst *)malloc(sizeof(saferun_inst));
 
     try {
         strcpy(inst->cgname, cgroup_name);
@@ -219,19 +236,24 @@ saferun_inst* saferun_init(const char *cgroup_name)
     return inst;
 }
 
-/*
+/**
  * Unititialize the library.
  * 
- * Just frees memory.
+ * @note This function just free`s memory.
  */
-int saferun_fini(saferun_inst * inst)
+int saferun_fini(saferun_inst *inst)
 {
     if (!inst)
         return -1;
-    delete inst;
+    free(inst);
     return 0;
 }
 
+/**
+ * Set logging fd and logging priority.
+ *
+ * @param priority  see log_priorities.h
+ */
 void saferun_set_logging(int fd, int priority)
 {
     log_set_logging(fd, priority);
