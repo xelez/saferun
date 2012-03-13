@@ -5,6 +5,9 @@
 cmake_minimum_required (VERSION 2.6)
 project (SAFERUN)
 
+#Add cmake modules dir to path
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_LIST_DIR}/cmake )
+
 #set(SAFERUN_VERSION "0.1-GIT")
 execute_process(
     COMMAND "${SAFERUN_SOURCE_DIR}/GIT-VERSION-GEN"
@@ -17,6 +20,7 @@ option(USE_PROFILING "Compile in profiling output" Off)
 
 add_subdirectory(libsaferun)
 add_subdirectory(srun)
+add_subdirectory(pysaferun)
 
 # Packaging
 # All in one for now
