@@ -1,6 +1,3 @@
-* cleanup code
-* write more documentation
-* write utility functions like saferun_popen();
 * Add tests
-* Build package
-* add python bindings
+* Speed up library (at least one loop to optimize)
+* Build normal packages
