@@ -123,39 +123,11 @@ typedef struct saferun_task {
     int stderr_fd;
 } saferun_task;
 
-/**
- * Run task.
- *
- * @param inst : See saferun_inst
- * @param task : See saferun_task
- * @param stat : See saferun_stat
- *
- * @return -1 if there were some library errors(for example, no rights to create new cgroup).
- *         Returns 0 otherwise.
- * 
- * @note Error description is written to log_fd, you can set it to what you want by
- * saferun_set_logging().
- */
 int saferun_run(const saferun_inst *inst, const saferun_task *task, saferun_stat *stat);
 
-/**
- * Initialize the library.
- *
- * @param cgroup_name
- *     The name of cgroup to create and use for measuring time and limiting memory.
- * @return NULL if errors, or pointer to saferun_inst otherwise.
- *
- * @note It`s a good idea to call saferun_set_loggin() first.
- */
-saferun_inst* saferun_init(const char *cgroup_name);
+saferun_inst *saferun_init(const char *cgroup_name);
 
-/**
- * Finilize the library
- *
- * @note Now it just frees memory.
- * @return always 0.
- */
-int saferun_fini(saferun_inst * inst);
+int saferun_fini(saferun_inst *inst);
 
 void saferun_set_logging(int fd, int priority);
 
