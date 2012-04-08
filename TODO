@@ -1,3 +1,8 @@
 * Add tests
 * Speed up library (at least one loop to optimize)
 * Build normal packages
+
+TODO: use info at this links to get waitpid with timeout
+ * http://stackoverflow.com/questions/282176/waitpid-equivalent-with-timeout
+ * http://www.kernel.org/doc/man-pages/online/pages/man7/pthreads.7.html
+ * http://linux.die.net/man/2/timer_create
