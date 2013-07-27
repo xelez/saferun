@@ -19,7 +19,7 @@ $ make
 
 How to build .deb:
 $ cd build/release
-$ cpack -G deb
+$ cpack -G DEB
 
 Author:
   Alexander Ankudinov <xelez0@gmail.com>
