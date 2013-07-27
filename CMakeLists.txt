@@ -51,5 +51,11 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library for safely execution and resource 
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${SAFERUN_SOURCE_DIR}/README")
 set(CPACK_RESOURCE_FILE_LICENSE "${SAFERUN_SOURCE_DIR}/LICENSE")
 
-set (CPACK_SOURCE_IGNORE_FILES "\\/_;/build/;/CVS/;/\\.svn/;/\\.bzr/;/\\.hg/;/\\.git/;\\.swp$;\\.#;/#" CACHE STRING "CPACK will ignore this files" )
+set (CPACK_SOURCE_IGNORE_FILES
+    "/_"
+    "/build/"
+    "/CVS/"
+    "\\\\.git/"
+    "\\\\.swp$"
+    CACHE STRING "CPACK will ignore this files" )
 include(CPack)
