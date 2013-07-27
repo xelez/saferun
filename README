@@ -7,6 +7,7 @@ Dependences:
  * recent kernel with cgroup cpuacct, devices and memory subsystems support
  * mounted cgroup filesystem
  * libcap-dev
+ * cython and python-dev packages
 
 More info can be found in docs/Dependences.md
 
