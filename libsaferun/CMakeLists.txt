@@ -10,3 +10,4 @@ if(USE_PROFILING)
 endif(USE_PROFILING)
 
 install(TARGETS saferun DESTINATION lib)
+install(FILES saferun.h log_priorities.h DESTINATION include/saferun)
